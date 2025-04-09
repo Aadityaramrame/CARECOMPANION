@@ -22,18 +22,20 @@ class DataProcessor:
         self.df, self.test_df = train_test_split(self.df, test_size=0.2, random_state=42)
 
 class Chatbot:
-    def __init__(self, data_processor):
+    def __init__(self, data_processor, similarity_threshold=0.5):
         self.data_processor = data_processor
+        self.similarity_threshold = similarity_threshold  # Set a similarity threshold
 
-    def get_response(self, user_query):  # Renamed from get_best_match to get_response
+    def get_response(self, user_query):
         user_query = user_query.lower().strip()
         user_tfidf = self.data_processor.vectorizer.transform([user_query])
         similarities = cosine_similarity(user_tfidf, self.data_processor.tfidf_matrix)
         best_match_index = similarities.argmax()
         best_score = similarities[0, best_match_index]
 
-        if best_score < 0.5:
-            return "UNKNOWN", "Let me think some more.", "N/A"
+        # Check if the best score meets the similarity threshold
+        if best_score < self.similarity_threshold:
+            return "UNKNOWN", "I'm sorry, I don't have enough information to answer that question.", "N/A"
 
         best_question = self.data_processor.df.iloc[best_match_index]['question']
         best_answer = self.data_processor.df.iloc[best_match_index]['answer'].replace(" || ", "\n- ")
@@ -47,11 +49,14 @@ class Chatbot:
             if user_input.lower() == "exit":
                 print("Chatbot: Goodbye! Take care!")
                 break
-            best_question, response, source = self.get_best_match(user_input)
-            print(f"\nChatbot (matched question): {best_question}")
-            print(f"Chatbot (answer): {response}")
-            print(f"Source: {source}")
-
+            best_question, response, source = self.get_response(user_input)
+            if best_question == "UNKNOWN":
+                print(f"\nChatbot: {response}")
+            else:
+                print(f"\nChatbot (matched question): {best_question}")
+                print(f"Chatbot (answer): {response}")
+                print(f"Source: {source}")
+                
 if __name__ == "__main__":
     data_processor = DataProcessor()
     chatbot = Chatbot(data_processor)
