@@ -42,7 +42,7 @@ class MedicalKeywordExtractor:
         text = ' '.join(text.split())
         return text
 
-    def extract_keywords(self, text: str, top_n: int = 10) -> List[Tuple[str, float]]: 
+    def extract_keywords(self, text: str, top_n: int = 10) -> List[Tuple[str, float]]:
         """
         Extract keywords from the input text using multiple methods.
         Returns a list of (keyword, score) tuples.
@@ -119,7 +119,7 @@ class MedicalSummaryInput:
             if line.strip() == "":
                 break
             self.summary += line + " "
-        
+
         if not self.summary.strip():
             print("No summary provided. Exiting.")
             return None
